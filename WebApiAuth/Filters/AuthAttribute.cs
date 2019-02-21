@@ -88,9 +88,6 @@ namespace WebApiAuth
                 return;
             }
 
-            //根据请求类型拼接参数
-           string data = request.QueryString.Value;
-
             //比较 sign 是否正确
             var requestParames = new Dictionary<string, string>
             {
@@ -98,6 +95,14 @@ namespace WebApiAuth
                 { "timestamp",timestamp},
                 //{ "method",method},
             };
+
+            if (context.ActionArguments != null && context.ActionArguments.Count > 0)
+            {
+                foreach (var args in context.ActionArguments)
+                {
+                    requestParames.Add(args.Key, context.ActionArguments[args.Key].ToString());
+                }
+            }
 
             var newsign = Signature(requestParames, user.secret);
             if (newsign != sign)
@@ -120,7 +125,7 @@ namespace WebApiAuth
         /// </summary>
         /// <param name="keyValuePairs"></param>
         /// <returns></returns>
-        private string Signature(Dictionary<string, string> keyValuePairs,string secret)
+        private string Signature(Dictionary<string, string> keyValuePairs, string secret)
         {
             // 第一步：把字典按Key的字母顺序排序
             var sortedParams = new SortedDictionary<string, string>(keyValuePairs, StringComparer.Ordinal);
